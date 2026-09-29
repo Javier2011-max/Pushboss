@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PushBoss"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PushBoss – Pushup Boss Fighter</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#1c1b22;--mut:#6b6878;--ac:#e0452b;--gold:#a86b00;--hp:#d43a3a;--line:#ddd8cc;--ok:#1e8e4e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14131a;--card:#201f29;--ink:#f2f0f7;--mut:#a09cb0;--ac:#ff6a4d;--gold:#ffc64a;--hp:#ff4d5e;--line:#33313f;--ok:#4be08a}}
+:root[data-theme="dark"]{--bg:#14131a;--card:#201f29;--ink:#f2f0f7;--mut:#a09cb0;--ac:#ff6a4d;--gold:#ffc64a;--hp:#ff4d5e;--line:#33313f;--ok:#4be08a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;-webkit-user-select:none;user-select:none}
+.app{max-width:1100px;margin:0 auto;padding:12px;display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:820px){.app{grid-template-columns:1.3fr 1fr}.top{grid-column:1/-1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.stat{font-weight:700;font-size:18px}.stat small{display:block;color:var(--mut);font-weight:500;font-size:12px}
+h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.arena{text-align:center;position:relative;overflow:hidden;min-height:340px}
+.boss{font-size:130px;line-height:1.1;display:inline-block;transition:transform .1s}
+.boss.hit{animation:shake .25s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-14px) rotate(-4deg)}75%{transform:translateX(14px) rotate(4deg)}}
+.bname{font-size:22px;font-weight:800}.bar{height:22px;background:var(--line);border-radius:12px;overflow:hidden;margin:8px auto;max-width:420px}
+.bar i{display:block;height:100%;background:var(--hp);width:100%;transition:width .25s}
+.sword{position:absolute;right:12%;bottom:18px;font-size:56px;transform-origin:80% 90%;transition:transform .12s}
+.sword.sw{transform:rotate(-70deg) scale(1.2)}
+.dmg{position:absolute;left:50%;top:40%;font-weight:900;font-size:34px;color:var(--gold);pointer-events:none;animation:fl .9s forwards;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+@keyframes fl{to{transform:translateY(-90px);opacity:0}}
+.big{font-size:56px;font-weight:900;text-align:center;line-height:1}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;background:var(--ac);color:#fff;cursor:pointer;touch-action:manipulation}
+button.alt{background:var(--line);color:var(--ink)}button:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.row>button{flex:1}
+video{width:100%;max-height:220px;background:#000;border-radius:12px;object-fit:cover;display:none}
+video.on{display:block}.mir{transform:scaleX(-1)}
+#st{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
+.item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}.item .e{font-size:28px}.item .t{flex:1}.item .t b{display:block}.item .t span{font-size:12px;color:var(--mut)}
+.item button{padding:8px 12px;font-size:14px}.g{color:var(--gold)}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:800;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+label.btn{flex:1;font-weight:700;border-radius:12px;padding:12px 16px;background:var(--ok);color:#fff;cursor:pointer;text-align:center;touch-action:manipulation}
+</style></head><body>
+<div class="app">
+<div class="card top"><h1>💪 PushBoss</h1>
+<div class="stat" id="sLv">–<small>Boss level</small></div>
+<div class="stat g" id="sGold">–<small>Gold</small></div>
+<div class="stat" id="sReps">–<small>Total pushups</small></div></div>
+
+<div class="card arena" id="arena">
+<div class="bname" id="bn"></div>
+<div class="bar"><i id="hp"></i></div><div id="hpt" style="color:var(--mut);font-size:14px"></div>
+<div class="boss" id="boss"></div><div class="sword" id="sw"></div>
+<div class="big" id="rc" style="margin-top:6px">0</div><div style="color:var(--mut);font-size:13px">reps this session</div>
+</div>
+
+<div style="display:grid;gap:12px;align-content:start">
+<div class="card"><h2>Camera</h2>
+<video id="v" playsinline muted></video>
+<div id="st">Opción fácil: pulsa Grabar vídeo (4 s sin ti en el encuadre, luego tus flexiones). Opción en directo: Conectar cámara (puede estar bloqueada dentro del chat).</div>
+<div class="row"><button id="bCam">Conectar cámara</button><button class="alt" id="bFlip">Girar cámara</button></div>
+<div class="row"><label class="btn">🎥 Grabar vídeo y contar (sin permisos)<input type="file" id="vf" accept="video/*" capture hidden></label></div>
+<button class="alt" id="bOpen" style="display:none"></button>
+<div class="row"><button class="alt" id="bCal" disabled>Calibrar</button><button class="alt" id="bTap">Toque = 1 rep</button></div></div>
+<div class="card"><h2>Sword</h2><div id="swl"></div></div>
+<div class="card"><h2>Upgrades</h2><div id="upl"></div></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const SW=[{n:'Wooden Stick',d:1,c:0,e:'🪵'},{n:'Iron Blade',d:2,c:30,e:'🗡️'},{n:'Steel Saber',d:4,c:100,e:'⚔️'},{n:'Flame Sword',d:7,c:300,e:'🔥'},{n:'Frost Edge',d:12,c:800,e:'❄️'},{n:'Thunder Katana',d:20,c:2000,e:'⚡'},{n:'Void Reaper',d:35,c:5000,e:'🌌'}];
+const BO=[['Slime King','🟢',5],['Rat Lord','🐀',10],['Wolf Alpha','🐺',18],['Zombie Brute','🧟',30],['Goblin Chief','👹',45],['Kraken','🦑',70],['Skeleton Lord','💀',100],['Iron Golem','🤖',150],['Alien Overmind','👾',220],['Ancient Dragon','🐉',320]];
+const UP=[{k:'dmg',n:'Power Grip',d:'+1 damage per rep',b:25,e:'💥'},{k:'crit',n:'Critical Chance',d:'+5% chance of double damage (max 10)',b:40,e:'🎯',max:10},{k:'gold',n:'Gold Rush',d:'+1 gold per hit, +10% boss gold',b:30,e:'💰'}];
+const KEY='pushboss_v1';
+let S={lvl:1,hp:0,gold:0,own:[0],eq:0,up:{dmg:0,crit:0,gold:0},reps:0},sess=0;
+try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.up)S=Object.assign(S,r)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+function boss(l){const i=(l-1)%10,c=Math.floor((l-1)/10);return{n:(c?'Elder ':'')+BO[i][0],e:BO[i][1],hp:Math.round(BO[i][2]*(1+c*1.8))}}
+if(!S.hp)S.hp=boss(S.lvl).hp;
+const upCost=k=>{const u=UP.find(x=>x.k===k);return Math.round(u.b*Math.pow(1.6,S.up[k]))};
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+let ac;function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.15,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function hit(){
+  const B=boss(S.lvl);let d=SW[S.eq].d+S.up.dmg,crit=Math.random()<S.up.crit*.05;if(crit)d*=2;
+  S.hp-=d;S.reps++;sess++;S.gold+=1+S.up.gold;
+  const b=$('#boss');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');
+  const s=$('#sw');s.classList.add('sw');setTimeout(()=>s.classList.remove('sw'),130);
+  const f=document.createElement('div');f.className='dmg';f.textContent=(crit?'CRIT ':'-')+d;f.style.marginLeft=(Math.random()*120-60)+'px';$('#arena').appendChild(f);setTimeout(()=>f.remove(),900);
+  beep(crit?880:520,.12);
+  if(S.hp<=0){const r=Math.round(B.hp*1.5*(1+.1*S.up.gold));S.gold+=r;toast('☠️ '+B.n+' defeated! +'+r+' gold');beep(300,.4);S.lvl++;S.hp=boss(S.lvl).hp}
+  save();render();
+}
+function render(){
+  const B=boss(S.lvl);
+  $('#sLv').firstChild.textContent=S.lvl;$('#sGold').firstChild.textContent=S.gold;$('#sReps').firstChild.textContent=S.reps;
+  $('#bn').textContent='Lv '+S.lvl+' · '+B.n;$('#boss').textContent=B.e;$('#sw').textContent=SW[S.eq].e;
+  $('#hp').style.width=Math.max(0,S.hp/B.hp*100)+'%';$('#hpt').textContent=Math.max(0,S.hp)+' / '+B.hp+' HP';$('#rc').textContent=sess;
+  $('#swl').innerHTML=SW.map((w,i)=>{const own=S.own.includes(i);const btn=own?(S.eq===i?'<button disabled>Equipped</button>':'<button class="alt" data-eq="'+i+'">Equip</button>'):'<button data-buy="'+i+'"'+(S.gold<w.c?' disabled':'')+'>'+w.c+' 🪙</button>';return'<div class="item"><div class="e">'+w.e+'</div><div class="t"><b>'+w.n+'</b><span>'+w.d+' damage</span></div>'+btn+'</div>'}).join('');
+  $('#upl').innerHTML=UP.map(u=>{const mx=u.max&&S.up[u.k]>=u.max,c=upCost(u.k);return'<div class="item"><div class="e">'+u.e+'</div><div class="t"><b>'+u.n+' · Lv '+S.up[u.k]+'</b><span>'+u.d+'</span></div><button data-up="'+u.k+'"'+(mx||S.gold<c?' disabled':'')+'>'+(mx?'MAX':c+' 🪙')+'</button></div>'}).join('');
+}
+document.addEventListener('click',e=>{const t=e.target;
+  if(t.dataset.buy!==undefined){const i=+t.dataset.buy;if(S.gold>=SW[i].c){S.gold-=SW[i].c;S.own.push(i);S.eq=i;toast(SW[i].n+' equipped!');save();render()}}
+  else if(t.dataset.eq!==undefined){S.eq=+t.dataset.eq;save();render()}
+  else if(t.dataset.up){const k=t.dataset.up,c=upCost(k);if(S.gold>=c){S.gold-=c;S.up[k]++;save();render()}}
+});
+$('#bTap').onclick=hit;
+
+/* ---------- Camera rep detection (motion / background subtraction) ---------- */
+const W=64,H=48,v=$('#v'),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+const cx=cv.getContext('2d',{willReadFrequently:true});
+let stream=null,facing='user',bg=null,cal=null,sm=null,mn=0,mx=0,state='up',last=0;
+const say=t=>$('#st').textContent=t;
+async function startCam(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say('Aquí la cámara está bloqueada. Usa el botón verde Grabar vídeo, que funciona sin permisos.');return}
+  try{
+    if(stream)stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:640,height:480},audio:false});
+    v.srcObject=stream;await v.play();v.classList.add('on');v.classList.toggle('mir',facing==='user');
+    $('#bCam').textContent='Apagar cámara';$('#bCal').disabled=false;bg=null;say('Cámara activada. Pulsa Calibrar y sal del encuadre.');
+  }catch(e){
+    const n=e.name;
+    say(n==='NotAllowedError'?'Permiso denegado. La cámara en directo está bloqueada aquí. Usa el botón verde Grabar vídeo, que funciona sin permisos.':n==='NotFoundError'?'No se encontró ninguna cámara.':'No se pudo activar la cámara ('+n+').');
+    
+  }
+}
+$('#bOpen').onclick=()=>{window.open(location.href,'_blank')};
+function stopCam(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;v.classList.remove('on');$('#bCam').textContent='Conectar cámara';$('#bCal').disabled=true;bg=null;cal=null;say('Cámara apagada.')}
+$('#bCam').onclick=()=>stream?stopCam():startCam();
+$('#bFlip').onclick=()=>{facing=facing==='user'?'environment':'user';if(stream)startCam()};
+$('#bCal').onclick=()=>{cal={t0:Date.now(),sum:new Float32Array(W*H),n:0};bg=null;sm=null};
+function frame(el){
+  cx.drawImage(el||v,0,0,W,H);const p=cx.getImageData(0,0,W,H).data,g=new Float32Array(W*H);
+  for(let i=0;i<W*H;i++)g[i]=(p[i*4]+p[i*4+1]+p[i*4+2])/3;return g;
+}
+function detect(g,now){
+  const rows=new Int16Array(H);let cnt=0;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(Math.abs(g[y*W+x]-bg[y*W+x])>32){rows[y]++;cnt++}}
+  if(cnt<W*H*.03){sm=null;return{msg:'No te detecto: entra en el encuadre (o recalibra).'}}
+  let a=0,y10=0;for(let y=0;y<H;y++){a+=rows[y];if(a>=cnt*.1){y10=y/H;break}}
+  sm=sm===null?y10:sm*.6+y10*.4;
+  if(mn===0&&mx===0){mn=mx=sm}
+  mn=Math.min(sm,mn+.0015);mx=Math.max(sm,mx-.0015);
+  const r=mx-mn,lo=mn+.35*r,hi=mn+.65*r;let rep=0;
+  if(r>.07){
+    if(state==='up'&&sm>hi)state='down';
+    else if(state==='down'&&sm<lo&&now-last>500){state='up';last=now;rep=1}
+  }
+  return{rep,msg:'Detectando ✓ · '+(state==='down'?'ABAJO ⬇️':'ARRIBA ⬆️')+' · rango '+Math.round(r*100)+'%'};
+}
+$('#vf').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  const vv=document.createElement('video');vv.muted=true;vv.playsInline=true;vv.preload='auto';vv.src=URL.createObjectURL(f);
+  try{
+    await new Promise((ok,no)=>{vv.onloadedmetadata=ok;vv.onerror=no});
+    const d=vv.duration;if(!(d>5))throw 0;
+    const sum=new Float32Array(W*H);let n=0,reps=0;bg=null;sm=null;mn=mx=0;state='up';last=-1e9;
+    for(let t=0;t<d;t+=.1){
+      vv.currentTime=t;await new Promise(r=>{vv.onseeked=r});
+      const g=frame(vv);
+      if(t<3){for(let i=0;i<g.length;i++)sum[i]+=g[i];n++;continue}
+      if(!bg)bg=sum.map(x=>x/n);
+      if(detect(g,t*1000).rep)reps++;
+      say('Analizando vídeo… '+Math.round(t/d*100)+'% · '+reps+' flexiones');
+      if(reps>=0&&Math.round(t*10)%10===0)await new Promise(r=>setTimeout(r,0));
+    }
+    bg=null;say(reps+' flexiones detectadas. ¡A pegar!');
+    for(let i=0;i<reps;i++)setTimeout(hit,i*400);
+  }catch(err){say('No pude analizar el vídeo. Graba al menos 6 s: primero 4 s SIN ti en el encuadre, luego tus flexiones.')}
+  e.target.value='';
+};
+setInterval(()=>{
+  if(!stream||v.readyState<2)return;
+  const g=frame(),now=Date.now();
+  if(cal){const el=now-cal.t0;
+    if(el<4000){say('Sal del encuadre… '+Math.ceil((4000-el)/1000)+'s');return}
+    if(el<5000){for(let i=0;i<g.length;i++)cal.sum[i]+=g[i];cal.n++;say('Escaneando la escena vacía…');return}
+    bg=cal.sum.map(x=>x/cal.n);cal=null;state='up';sm=null;say('¡Calibrado! Ponte en posición y empieza.');beep(660,.15);return}
+  if(!bg)return;
+  const o=detect(g,now);say(o.msg);if(o.rep)hit();
+},70);
+render();
+</script></body></html>
